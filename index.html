@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FAQ Chatbot</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#ece5dd;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+        }
+
+        .chat-container{
+            width:500px;
+            height:650px;
+            background:white;
+            border-radius:15px;
+            box-shadow:0px 0px 15px rgba(0,0,0,0.2);
+            display:flex;
+            flex-direction:column;
+        }
+
+        .header{
+            background:#075E54;
+            color:white;
+            padding:15px;
+            text-align:center;
+            font-size:22px;
+            font-weight:bold;
+        }
+
+        #chatbox{
+            flex:1;
+            overflow-y:auto;
+            padding:15px;
+            background:#e5ddd5;
+        }
+
+        .user-message{
+            background:#dcf8c6;
+            padding:10px;
+            margin:10px;
+            border-radius:10px;
+            max-width:70%;
+            margin-left:auto;
+            text-align:right;
+        }
+
+        .bot-message{
+            background:white;
+            padding:10px;
+            margin:10px;
+            border-radius:10px;
+            max-width:70%;
+            text-align:left;
+        }
+
+        .input-area{
+            display:flex;
+            padding:10px;
+            border-top:1px solid #ccc;
+        }
+
+        #userInput{
+            flex:1;
+            padding:10px;
+            font-size:16px;
+            border-radius:20px;
+            border:1px solid #ccc;
+            outline:none;
+        }
+
+        button{
+            margin-left:10px;
+            padding:10px 20px;
+            background:#25D366;
+            color:white;
+            border:none;
+            border-radius:20px;
+            cursor:pointer;
+        }
+
+        button:hover{
+            background:#1ebd5a;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <div class="header">
+        FAQ Chatbot
+    </div>
+
+    <div id="chatbox"></div>
+
+    <div class="input-area">
+        <input
+            type="text"
+            id="userInput"
+            placeholder="Type your question..."
+        >
+
+        <button onclick="sendMessage()">
+            Send
+        </button>
+    </div>
+
+</div>
+
+<script>
+
+async function sendMessage(){
+
+    let input =
+    document.getElementById("userInput");
+
+    let message = input.value.trim();
+
+    if(message === ""){
+        return;
+    }
+
+    let chatbox =
+    document.getElementById("chatbox");
+
+    // User message display
+    chatbox.innerHTML +=
+    `<div class="user-message">
+        ${message}
+     </div>`;
+    let typingDiv = document.createElement("div");
+    typingDiv.className = "bot-message";
+    typingDiv.id = "typing";
+    typingDiv.innerHTML = "Bot is typing...";
+
+    chatbox.appendChild(typingDiv);
+
+    let response = await fetch('/chat',{
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+            message:message
+        })
+
+    });
+
+    let data = await response.json();
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+
+
+    document.getElementById("typing").remove();
+
+    chatbox.innerHTML +=
+    `<div class="bot-message">
+        ${data.reply}
+     </div>`;
+
+    input.value = "";
+
+    chatbox.scrollTop =
+    chatbox.scrollHeight;
+}
+
+
+document.getElementById("userInput")
+.addEventListener("keypress", function(event){
+
+    if(event.key === "Enter"){
+        sendMessage();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
